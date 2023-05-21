@@ -32,6 +32,16 @@ public class PeopleController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("schedule")]
+    public IActionResult Schedule(string personName)
+    {
+        backgroundJobClient.Schedule(
+            () => Console.WriteLine("This name is " + personName),
+            TimeSpan.FromSeconds(5)
+        );
+        return Ok();
+    }
+
     [HttpGet]
     public async Task<IActionResult> Get()
     {
