@@ -35,9 +35,15 @@ public class PeopleController : ControllerBase
     [HttpPost("schedule")]
     public IActionResult Schedule(string personName)
     {
-        backgroundJobClient.Schedule(
+        // 实际上 Hangfire 添加任务后会返回 Job 的 id
+        var jobId = backgroundJobClient.Schedule(
             () => Console.WriteLine("This name is " + personName),
             TimeSpan.FromSeconds(5)
+        );
+        // 我们可以利用这个 id 做一些后续任务
+        backgroundJobClient.ContinueJobWith(
+            jobId,
+            () => Console.WriteLine($"The job {jobId} has finished")
         );
         return Ok();
     }
