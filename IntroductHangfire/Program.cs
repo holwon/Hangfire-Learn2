@@ -12,6 +12,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddScoped<IPeopleRepository, PeopleRepository>();
 
+builder.Services.AddTransient<ITimeService, TimeService>();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -41,7 +43,9 @@ builder.Services.AddHangfire(
             )
 );
 
-builder.Services.AddHangfireServer();
+builder.Services.AddHangfireServer(
+    options => options.SchedulePollingInterval = TimeSpan.FromSeconds(15)
+);
 
 var app = builder.Build();
 
@@ -57,6 +61,12 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.UseHangfireDashboard();
+
+RecurringJob.AddOrUpdate<ITimeService>(
+    "print-time",
+    service => service.PrintNow(),
+    "* 0/2 * * * *"
+);
 
 app.MapControllers();
 
